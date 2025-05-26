@@ -16,6 +16,10 @@ A powerful generative design system that creates CAD-compatible part designs whi
 - Python 3.8+
 - CAD software (e.g., Fusion 360, SolidWorks)
 - Required Python packages (see requirements.txt)
+- 7-Zip for data extraction:
+  - Windows: Install from https://www.7-zip.org/
+  - Linux: `sudo apt-get install p7zip-full`
+  - macOS: `brew install p7zip`
 
 ## Installation
 
@@ -30,7 +34,9 @@ cd Generative-Design-Module
 pip install -r requirements.txt
 ```
 
-## Data Download
+## Data Pipeline
+
+### 1. Data Download
 
 To download the required STEP files for training and testing:
 
@@ -52,7 +58,7 @@ This command will:
 
 Note: Make sure you have sufficient disk space and a stable internet connection before downloading.
 
-## Data Extraction
+### 2. Data Extraction
 
 After downloading, extract the .7z archive files:
 
@@ -77,13 +83,7 @@ for file in sevenz_files:
     os.system(f'7z x "{archive_path}" -o"{meta_dir}/extracted" -y')
 ```
 
-Prerequisites:
-- 7-Zip must be installed on your system
-- For Windows: Install 7-Zip from https://www.7-zip.org/
-- For Linux: Install using `sudo apt-get install p7zip-full`
-- For macOS: Install using `brew install p7zip`
-
-## Data Preprocessing
+### 3. Data Preprocessing
 
 To preprocess the extracted data:
 
@@ -94,7 +94,11 @@ cd data/process
 
 2. Run the preprocessing script:
 ```bash
-python process_brep.py --input ../abc_subset --interval $i --option 'abc'
+for i in $(seq 0 4)
+do
+    timeout 1000 python process_brep.py --input ../abc_subset --interval $i --option 'abc'
+    pkill -f 'python process_brep.py' # cleanup after each run
+done
 ```
 
 Parameters:
@@ -102,9 +106,7 @@ Parameters:
 - `--interval`: Processing interval (specify a value for $i)
 - `--option`: Dataset option (set to 'abc' for ABC dataset)
 
-Note: Make sure you have all required dependencies installed before running the preprocessing script.
-
-## Data Deduplication
+### 4. Data Deduplication
 
 To remove duplicate CAD models and components:
 
@@ -113,7 +115,7 @@ To remove duplicate CAD models and components:
 python deduplicate_cad.py --data abc_parsed --bit 6 --option 'abc'
 ```
 
-2. Deduplicate repeated surfaces and edges (for VAE training):
+2. Deduplicate surfaces and edges:
 ```bash
 # Deduplicate surfaces
 python deduplicate_surfedge.py --data abc_parsed --list abc_data_split_6bit.pkl --bit 6 --option 'abc'
@@ -129,11 +131,9 @@ Parameters:
 - `--edge`: Flag to process edges instead of surfaces
 - `--option`: Dataset option (set to 'abc' for ABC dataset)
 
-Note: The deduplication process helps reduce redundancy in the training data and improves model efficiency.
+## Training Pipeline
 
-## Training
-
-### VAE Training
+### 1. VAE Training
 
 The system uses Variational Autoencoders (VAE) to learn surface and edge representations. There are two separate training processes:
 
@@ -163,9 +163,7 @@ Training Parameters:
 - `--train_nepoch`: Number of training epochs
 - `--data_aug`: Enable data augmentation
 
-Note: Make sure you have sufficient GPU memory and the required dependencies installed before starting the training process.
-
-### Latent Diffusion Model (LDM) Training
+### 2. Latent Diffusion Model (LDM) Training
 
 The system uses Latent Diffusion Models for generating CAD components. There are four different training configurations:
 
@@ -219,8 +217,6 @@ LDM Training Parameters:
 - `--max_face`: Maximum number of faces per model
 - `--max_edge`: Maximum number of edges per model
 
-Note: The LDM training requires pre-trained VAE models. Make sure to complete the VAE training steps before starting LDM training.
-
 ## Generation
 
 ### Sampling CAD Models
@@ -235,4 +231,6 @@ Parameters:
 - `--mode`: Dataset mode (set to 'abc' for ABC dataset)
 
 Note: Make sure all required models (VAE and LDM) are trained before running the sampling script. The generated models will be saved in the specified output directory.
+
+
 
