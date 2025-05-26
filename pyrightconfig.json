@@ -1,0 +1,12 @@
+{
+    "exclude": [
+        "*.step",
+        "abc_subset",
+        "data_process/abc_parsed",
+        "data_process/abc_parsed_updated",
+        "samples_abc",
+        "data_process/abc_parsed_updated2",
+        "step",
+        "*.pkl"
+    ]
+}
