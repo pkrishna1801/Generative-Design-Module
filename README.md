@@ -2,6 +2,7 @@
 
 A powerful generative design system that creates CAD-compatible part designs while satisfying physical constraints. This module leverages advanced machine learning techniques to generate optimized mechanical components that meet specified requirements.
 
+<video src="https://github.com/user-attachments/assets/d39f25e6-cce0-4768-8d10-c676193c5052" controls></video>
 ## Features
 
 - Generative design of CAD-compatible parts
